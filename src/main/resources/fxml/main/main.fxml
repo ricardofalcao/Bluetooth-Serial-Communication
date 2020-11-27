@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@main.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pt.ricardofalcao.lsts.controller.main.MainController">
+   <children>
+      <VBox styleClass="sidebar">
+         <children>
+            <Label text="Devices">
+               <VBox.margin>
+                  <Insets top="7.0" />
+               </VBox.margin>
+            </Label>
+            <ScrollPane fx:id="sidebarScrollPane" focusTraversable="false" prefWidth="200.0" styleClass="devices" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets bottom="5.0" top="13.0" />
+               </VBox.margin>
+               <content>
+                  <VBox fx:id="sidebarPane" />
+               </content></ScrollPane>
+            <ButtonBar buttonMinWidth="30.0" prefHeight="40.0" prefWidth="200.0" styleClass="toolbar">
+              <buttons>
+                <Button fx:id="deviceAddButton" focusTraversable="false" mnemonicParsing="false" styleClass="toolbar-button" text="+" textAlignment="CENTER" />
+                  <Button focusTraversable="false" mnemonicParsing="false" text="-" />
+              </buttons>
+            </ButtonBar>
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </VBox>
+      <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+         <children>
+            <HBox alignment="CENTER_RIGHT">
+               <children>
+                  <ToggleButton fx:id="powerButton" focusTraversable="false" mnemonicParsing="false" text="OFF" />
+                  <Circle fx:id="powerIndicator" fill="#b9b9b9" radius="5.0" stroke="#909090" strokeType="INSIDE">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </Circle>
+               </children>
+            </HBox>
+            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="content" VBox.vgrow="ALWAYS">
+               <children>
+                  <Label text="Please select a device from the device list" textAlignment="CENTER">
+                     <VBox.margin>
+                        <Insets top="40.0" />
+                     </VBox.margin>
+                  </Label>
+               </children>
+            </VBox>
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </VBox>
+   </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
+</HBox>
