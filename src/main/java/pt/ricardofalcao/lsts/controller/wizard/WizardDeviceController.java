@@ -1,4 +1,4 @@
-package pt.ricardofalcao.lsts.controller.main;
+package pt.ricardofalcao.lsts.controller.wizard;
 
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -8,9 +8,9 @@ import javafx.scene.layout.HBox;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DeviceController {
+public class WizardDeviceController {
 
-    private final MainController mainController;
+    private final WizardController wizardController;
 
     private final String name;
 
@@ -42,7 +42,7 @@ public class DeviceController {
     private void rootClick(MouseEvent event) {
         this.root.pseudoClassStateChanged(SELECTED, true);
 
-        this.mainController.setSelectedDevice(this);
+        this.wizardController.setSelectedDevice(this);
     }
 
     protected void unselect() {

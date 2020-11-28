@@ -12,7 +12,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.skin.ScrollPaneSkin;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.layout.VBox;
@@ -49,7 +48,7 @@ public class MainController {
 
     //
 
-    private DeviceController selectedDevice;
+    private MainDeviceController selectedDevice;
 
     /*
 
@@ -109,9 +108,9 @@ public class MainController {
             try {
                 for(int i = 0; i < 5; i++) {
                     FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/main/device.fxml"));
-                    loader.setController(new DeviceController(MainController.this, "Device #" + (i + 1), UUID.randomUUID().toString()));
+                    loader.setController(new MainDeviceController(MainController.this, "Device #" + (i + 1), UUID.randomUUID().toString()));
 
-                    Parent deviceRoot = loader.load();
+                    Node deviceRoot = loader.load();
                     sidebarPane.getChildren().add(deviceRoot);
                 }
             } catch(IOException ex) {
@@ -164,7 +163,7 @@ public class MainController {
         MISC FUNCTIONS
      */
 
-    public void setSelectedDevice(DeviceController controller) {
+    public void setSelectedDevice(MainDeviceController controller) {
         if(Objects.equals(controller, this.selectedDevice)) {
             return;
         }
