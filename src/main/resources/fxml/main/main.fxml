@@ -7,31 +7,49 @@
 
 <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@main.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pt.ricardofalcao.lsts.controller.main.MainController">
    <children>
-      <VBox styleClass="sidebar">
+      <VBox prefWidth="200.0" styleClass="sidebar">
          <children>
-            <Label text="Devices">
+            <HBox alignment="CENTER_LEFT">
+               <children>
+                  <Label text="Devices" />
+                  <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                     <children>
+                        <SVGPath fx:id="favoriteFilterButton" content="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" fill="#c8c8c8" scaleX="0.8" scaleY="0.8" scaleZ="0.8" stroke="#808080" />
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <ScrollPane fx:id="sidebarScrollPane" focusTraversable="false" hbarPolicy="NEVER" styleClass="devices" VBox.vgrow="ALWAYS">
                <VBox.margin>
-                  <Insets top="7.0" />
-               </VBox.margin>
-            </Label>
-            <ScrollPane fx:id="sidebarScrollPane" focusTraversable="false" prefWidth="200.0" styleClass="devices" VBox.vgrow="ALWAYS">
-               <VBox.margin>
-                  <Insets bottom="5.0" top="13.0" />
+                  <Insets bottom="5.0" top="7.0" />
                </VBox.margin>
                <content>
-                  <VBox fx:id="sidebarPane" />
+                  <VBox fx:id="sidebarPane" alignment="TOP_CENTER">
+                     <children>
+                        <Label fx:id="deviceListLabel" focusTraversable="false" text="Label" textAlignment="CENTER" textFill="#9e9e9e" wrapText="true">
+                           <VBox.margin>
+                              <Insets top="10.0" />
+                           </VBox.margin>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </Label>
+                     </children></VBox>
                </content></ScrollPane>
-            <ButtonBar buttonMinWidth="30.0" prefHeight="40.0" prefWidth="200.0" styleClass="toolbar">
-              <buttons>
-                <Button fx:id="deviceAddButton" focusTraversable="false" mnemonicParsing="false" styleClass="toolbar-button" text="+" textAlignment="CENTER" />
-                  <Button focusTraversable="false" mnemonicParsing="false" text="-" />
-              </buttons>
-            </ButtonBar>
+            <Button fx:id="refreshDevicesButton" focusTraversable="false" mnemonicParsing="false" prefHeight="26.0" prefWidth="1000.0" text="Refresh">
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin></Button>
          </children>
          <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
       </VBox>
+      <Separator focusTraversable="false" orientation="VERTICAL" prefHeight="200.0">
+         <HBox.margin>
+            <Insets left="5.0" />
+         </HBox.margin>
+      </Separator>
       <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
          <children>
             <HBox alignment="CENTER_RIGHT">
@@ -46,11 +64,16 @@
             </HBox>
             <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="content" VBox.vgrow="ALWAYS">
                <children>
-                  <Label text="Please select a device from the device list" textAlignment="CENTER">
+                  <Label fx:id="selectDeviceWarnLabel" text="Please select a device from the device list" textAlignment="CENTER" textFill="#7c7c7c">
                      <VBox.margin>
                         <Insets top="40.0" />
                      </VBox.margin>
                   </Label>
+                  <TextArea fx:id="deviceContent" editable="false" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets top="6.0" />
+                     </VBox.margin>
+                  </TextArea>
                </children>
             </VBox>
          </children>

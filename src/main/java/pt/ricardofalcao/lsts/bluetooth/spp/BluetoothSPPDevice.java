@@ -7,6 +7,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.bluetooth.RemoteDevice;
 import javax.microedition.io.StreamConnection;
 import lombok.Getter;
@@ -16,6 +18,7 @@ public class BluetoothSPPDevice implements BluetoothDevice {
 
     private final BluetoothSPPServer server;
 
+    @Getter
     private final RemoteDevice device;
 
     @Getter
@@ -50,6 +53,8 @@ public class BluetoothSPPDevice implements BluetoothDevice {
         try {
             String data;
             while((data = reader.readLine()) != null) {
+                server.receivedData(this, data);
+
                 System.out.println(String.format("[%s] Received data: %s", this.friendlyName, data));
 
                 this.writer.write(data);
@@ -70,6 +75,6 @@ public class BluetoothSPPDevice implements BluetoothDevice {
         reader.close();
         writer.close();
 
-        server.removeDevice(RemoteDeviceHelper.getAddress(device.getBluetoothAddress()));
+        server.removeDevice(this);
     }
 }

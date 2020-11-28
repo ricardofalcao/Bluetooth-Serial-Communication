@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     compile 'io.ultreia:bluecove:2.1.1'
+    compile 'com.google.code.gson:gson:2.8.6'
 }
 
 javafx {

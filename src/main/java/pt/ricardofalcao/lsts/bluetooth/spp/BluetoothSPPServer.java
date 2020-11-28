@@ -4,6 +4,8 @@ import com.intel.bluetooth.RemoteDeviceHelper;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import javax.bluetooth.DiscoveryAgent;
 import javax.bluetooth.LocalDevice;
 import javax.bluetooth.RemoteDevice;
@@ -13,6 +15,8 @@ import javax.microedition.io.StreamConnection;
 import javax.microedition.io.StreamConnectionNotifier;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import pt.ricardofalcao.lsts.bluetooth.BluetoothDevice;
 import pt.ricardofalcao.lsts.bluetooth.BluetoothServer;
 
 @RequiredArgsConstructor
@@ -40,6 +44,24 @@ public class BluetoothSPPServer implements BluetoothServer {
     /*
 
      */
+
+    @Setter
+    private Consumer<BluetoothDevice> connectCallback;
+
+    @Setter
+    private BiConsumer<BluetoothDevice, String> dataCallback;
+
+    @Setter
+    private Consumer<BluetoothDevice> disconnectCallback;
+
+    /*
+
+     */
+
+    @Override
+    public BluetoothDevice getConnectedDevice(String address) {
+        return this.deviceList.get(RemoteDeviceHelper.getAddress(address));
+    }
 
     public void start() throws IOException {
         if (this.running) {
@@ -72,6 +94,10 @@ public class BluetoothSPPServer implements BluetoothServer {
                 BluetoothSPPDevice threadedDevice = new BluetoothSPPDevice(this, device, connection);
                 deviceList.put(RemoteDeviceHelper.getAddress(device.getBluetoothAddress()), threadedDevice);
 
+                if(connectCallback != null) {
+                    connectCallback.accept(threadedDevice);
+                }
+
                 new Thread(threadedDevice::readData).start();
             } catch(IOException ex) {
                 ex.printStackTrace();
@@ -89,8 +115,18 @@ public class BluetoothSPPServer implements BluetoothServer {
         this.connectionNotifier.close();
     }
 
-    protected void removeDevice(long address) {
-        deviceList.remove(address);
+    protected void receivedData(BluetoothSPPDevice threadedDevice, String data) {
+        if(dataCallback != null) {
+            dataCallback.accept(threadedDevice, data);
+        }
+    }
+
+    protected void removeDevice(BluetoothSPPDevice threadedDevice) {
+        if(disconnectCallback != null) {
+            disconnectCallback.accept(threadedDevice);
+        }
+
+        deviceList.remove(RemoteDeviceHelper.getAddress(threadedDevice.getDevice().getBluetoothAddress()));
     }
 
 }
