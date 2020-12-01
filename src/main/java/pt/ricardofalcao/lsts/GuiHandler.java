@@ -1,7 +1,5 @@
 package pt.ricardofalcao.lsts;
 
-import java.util.ArrayList;
-import java.util.List;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,10 +30,5 @@ public class GuiHandler extends Application {
         primaryStage.setTitle("Bluetooth Serial Communication");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
-    }
-
-    @Override
-    public void stop() throws Exception {
-        Main.server.stopServerAsync().get();
     }
 }

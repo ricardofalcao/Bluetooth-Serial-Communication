@@ -17,36 +17,28 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
+import javax.bluetooth.DataElement;
 import javax.bluetooth.DeviceClass;
 import javax.bluetooth.DiscoveryAgent;
 import javax.bluetooth.DiscoveryListener;
 import javax.bluetooth.LocalDevice;
 import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
+import javax.bluetooth.UUID;
 import lombok.Getter;
+import pt.ricardofalcao.lsts.Constants;
 import pt.ricardofalcao.lsts.Main;
-import pt.ricardofalcao.lsts.ServerHandler;
-import pt.ricardofalcao.lsts.bluetooth.spp.BluetoothSPPDevice;
+import pt.ricardofalcao.lsts.bluetooth.spp.BluetoothSPPClient;
 
 public class MainController {
 
     private Stage wizardStage;
-
-    //
-
-    @FXML
-    private ToggleButton powerButton;
-
-    @FXML
-    private Circle powerIndicator;
 
     //
 
@@ -100,6 +92,13 @@ public class MainController {
                 Platform.runLater(() -> {
                     populateSidebar();
                 });
+
+                LocalDevice localDevice = LocalDevice.getLocalDevice();
+
+                int[] attrs = new int[] { 0X0100 };
+                UUID[] uuidSet = new UUID[] {Constants.BLUETOOTH_SPP_SERVICE_UUID };
+
+                localDevice.getDiscoveryAgent().searchServices(attrs, uuidSet, btDevice, this);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -107,12 +106,37 @@ public class MainController {
 
         @Override
         public void servicesDiscovered(int transID, ServiceRecord[] servRecord) {
+            System.out.println(String.format("Discovered services for %d", transID));
 
+            for(ServiceRecord record : servRecord) {
+                String url = record.getConnectionURL(ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
+
+                if (url == null) {
+                    continue;
+                }
+
+                DataElement serviceName = record.getAttributeValue(0x0100);
+                if (serviceName != null) {
+                    System.out.println(String.format("Service %s found %s.", serviceName.getValue(), url));
+                } else {
+                    System.out.println(String.format("Service found %s.", url));
+                }
+
+                RemoteDevice host = record.getHostDevice();
+                MainDeviceController controller = devices.get(RemoteDeviceHelper.getAddress(host.getBluetoothAddress()));
+                if (controller == null) {
+                    System.out.println(String.format("Invalid controller for %s.", host.getBluetoothAddress()));
+                    continue;
+                }
+
+                BluetoothSPPClient client = new BluetoothSPPClient();
+                controller.attachBluetoothClient(client, url);
+            }
         }
 
         @Override
         public void serviceSearchCompleted(int transID, int respCode) {
-
+            System.out.println("serviceSearchCompleted");
         }
 
         @Override
@@ -133,6 +157,8 @@ public class MainController {
         }
     };
 
+
+
     /*
 
      */
@@ -142,111 +168,24 @@ public class MainController {
         this.filterFavorite = Main.config.main.filterFavorite;
         filterFavoriteUpdateUI();
 
-        powerButton.setOnMouseClicked(this::powerButtonClicked);
-
         sidebarScrollPane.setOnMouseClicked(this::sidebarScrollPaneClicked);
         favoriteFilterButton.setOnMouseClicked(this::favoriteFilterClicked);
 
         sidebarPane.getChildren().remove(deviceListLabel);
         deviceListLabel.prefWidthProperty().bind(sidebarScrollPane.widthProperty());
 
-        refreshDevicesButton.setDisable(true);
         refreshDevicesButton.setOnMouseClicked(this::refreshDevicesClicked);
 
         deviceContent.setManaged(false);
         deviceContent.setVisible(false);
 
-        Main.server.handle.setDataCallback((device, data) -> {
-            long address = RemoteDeviceHelper.getAddress(device.getDevice().getBluetoothAddress());
-            MainDeviceController controller = devices.get(address);
-
-            if (controller != null) {
-                controller.addMessage(data);
-            }
-        });
-
-        Main.server.handle.setConnectCallback((device) -> {
-            long address = RemoteDeviceHelper.getAddress(device.getDevice().getBluetoothAddress());
-            MainDeviceController controller = devices.get(address);
-
-            if (controller != null) {
-                controller.setConnected(true);
-            }
-        });
-
-        Main.server.handle.setDisconnectCallback((device) -> {
-            long address = RemoteDeviceHelper.getAddress(device.getDevice().getBluetoothAddress());
-            MainDeviceController controller = devices.get(address);
-
-            if (controller != null) {
-                controller.setConnected(false);
-            }
-        });
-
         Main.gui.getPrimaryStage().setOnCloseRequest((event) -> {
+            detachConnectedDevices();
+
             if (wizardStage != null) {
                 wizardStage.close();
             }
         });
-    }
-
-    /*
-        POWER BUTTON
-     */
-
-    private void powerButtonClicked(MouseEvent mouseEvent) {
-        ServerHandler serverHandler = Main.server;
-
-        powerButton.setDisable(true);
-
-        if (serverHandler.isRunning()) {
-            System.out.println("Stopping bluetooth server");
-
-            serverHandler.stopServerAsync().thenAccept(this::powerButtonStopCallback);
-            return;
-        }
-
-        System.out.println("Starting bluetooth server");
-
-        serverHandler.startServerAsync().thenAccept(this::powerButtonStartCallback);
-    }
-
-    private void powerButtonStopCallback(boolean success) {
-        this.scanningDevices = false;
-
-        try {
-            LocalDevice localDevice = LocalDevice.getLocalDevice();
-            DiscoveryAgent agent = localDevice.getDiscoveryAgent();
-            agent.cancelInquiry(this.bluetoothDiscoveryListener);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        Platform.runLater(() -> {
-            powerButton.setDisable(false);
-            refreshDevicesButton.setDisable(true);
-            sidebarPane.getChildren().remove(deviceListLabel);
-
-            powerButton.setText("OFF");
-            powerIndicator.setFill(Color.rgb(200, 200, 200));
-
-            sidebarPane.getChildren().clear();
-
-            selectedDevice = null;
-            selectedDeviceUpdateUI();
-        });
-    }
-
-    private void powerButtonStartCallback(boolean success) {
-        Platform.runLater(() -> {
-            powerButton.setDisable(false);
-            refreshDevicesButton.setDisable(false);
-
-            powerButton.setText("ON");
-            powerIndicator.setFill(Color.rgb(40, 180, 40));
-        });
-
-        CompletableFuture.runAsync(this::scanDevices);
     }
 
     /*
@@ -291,7 +230,7 @@ public class MainController {
     }
 
     protected void populateSidebar() {
-        sidebarPane.getChildren().clear();
+        sidebarPane.getChildren().removeIf((n) -> !n.equals(deviceListLabel));
 
         List<MainDeviceController> _devices = new ArrayList<>();
         _devices.addAll(this.devices.values());
@@ -313,9 +252,17 @@ public class MainController {
         }
     }
 
-    private void refreshDevicesClicked(MouseEvent mouseEvent) {
+    private void detachConnectedDevices() {
+        for (MainDeviceController value : this.devices.values()) {
+            value.detachBluetooth();
+        }
+
         this.devices.clear();
         sidebarPane.getChildren().clear();
+    }
+
+    private void refreshDevicesClicked(MouseEvent mouseEvent) {
+        detachConnectedDevices();
 
         CompletableFuture.runAsync(this::scanDevices);
     }
@@ -328,6 +275,11 @@ public class MainController {
     private void favoriteFilterClicked(MouseEvent mouseEvent) {
         this.filterFavorite = !this.filterFavorite;
         filterFavoriteUpdateUI();
+
+        if (this.selectedDevice != null && this.filterFavorite && !this.selectedDevice.isFavorite()) {
+            setSelectedDevice(null);
+        }
+
         this.populateSidebar();
 
         Main.config.main.filterFavorite = this.filterFavorite;

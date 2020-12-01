@@ -52,16 +52,6 @@
       </Separator>
       <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
          <children>
-            <HBox alignment="CENTER_RIGHT">
-               <children>
-                  <ToggleButton fx:id="powerButton" focusTraversable="false" mnemonicParsing="false" text="OFF" />
-                  <Circle fx:id="powerIndicator" fill="#b9b9b9" radius="5.0" stroke="#909090" strokeType="INSIDE">
-                     <HBox.margin>
-                        <Insets left="10.0" />
-                     </HBox.margin>
-                  </Circle>
-               </children>
-            </HBox>
             <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="content" VBox.vgrow="ALWAYS">
                <children>
                   <Label fx:id="selectDeviceWarnLabel" text="Please select a device from the device list" textAlignment="CENTER" textFill="#7c7c7c">

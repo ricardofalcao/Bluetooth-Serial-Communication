@@ -1,9 +1,12 @@
 package pt.ricardofalcao.lsts.controller.main;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -15,9 +18,21 @@ import javafx.scene.shape.SVGPath;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import pt.ricardofalcao.lsts.Main;
+import pt.ricardofalcao.lsts.bluetooth.BluetoothClient;
 
 @RequiredArgsConstructor
 public class MainDeviceController {
+
+    @RequiredArgsConstructor
+    private static enum DeviceStatus {
+
+        IDLE(Color.rgb(200, 200, 200)),
+        CONNECTING(Color.rgb(219, 161, 129)),
+        CONNECTED(Color.rgb(40, 180, 40));
+
+        private final Color color;
+
+    }
 
     private final MainController mainController;
 
@@ -44,16 +59,18 @@ public class MainDeviceController {
     private SVGPath favoriteButton;
 
     @FXML
-    private Circle deviceConnectedCircle;
+    private Circle deviceStatusCircle;
 
     /*
 
      */
 
+    private BluetoothClient bluetoothClient;
+
     @Getter
     private boolean favorite;
 
-    private boolean connected;
+    private DeviceStatus status;
 
     @Getter
     private List<String> messageHistory = new ArrayList<>();
@@ -67,8 +84,8 @@ public class MainDeviceController {
         this.favorite = Main.config.main.deviceIsFavorite(this.address);
         favoriteUpdateUI();
 
-        this.connected = Main.server.handle.getConnectedDevice(this.address) != null;
-        connectedUpdateUI();
+        this.status = DeviceStatus.IDLE;
+        statusUpdateUI();
 
         this.deviceName.setText(this.name);
         this.deviceAddress.setText(this.address);
@@ -77,6 +94,59 @@ public class MainDeviceController {
         this.root.setOnMouseClicked(this::rootClick);
 
         this.favoriteButton.setOnMouseClicked(this::favoriteClick);
+    }
+
+    /*
+        BLUETOOTH
+     */
+
+    public void attachBluetoothClient(BluetoothClient client, String connectionUrl) {
+        this.bluetoothClient = client;
+
+        this.status = DeviceStatus.CONNECTING;
+        this.statusUpdateUI();
+
+        this.bluetoothClient.setConnectCallback(this::bluetoothConnect);
+        this.bluetoothClient.setDisconnectCallback(this::bluetoothDisconnect);
+        this.bluetoothClient.setDataCallback(this::bluetoothData);
+
+        CompletableFuture.runAsync(() ->  {
+            try {
+                bluetoothClient.connect(connectionUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void detachBluetooth() {
+        if (this.bluetoothClient == null) {
+            return;
+        }
+
+        try {
+            this.bluetoothClient.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void bluetoothConnect() {
+        Platform.runLater(() -> {
+            this.status = DeviceStatus.CONNECTED;
+            this.statusUpdateUI();
+        });
+    }
+
+    private void bluetoothDisconnect() {
+        Platform.runLater(() -> {
+            this.status = DeviceStatus.IDLE;
+            this.statusUpdateUI();
+        });
+    }
+
+    private void bluetoothData(String data) {
+        this.addMessage(data);
     }
 
     /*
@@ -113,16 +183,11 @@ public class MainDeviceController {
     }
 
     /*
-        CONNECTED
+        STATUS
      */
 
-    protected void setConnected(boolean value) {
-        this.connected = value;
-        connectedUpdateUI();
-    }
-
-    private void connectedUpdateUI() {
-        this.deviceConnectedCircle.setFill(this.connected ? Color.rgb(40, 180, 40) : Color.rgb(200, 200, 200));
+    private void statusUpdateUI() {
+        this.deviceStatusCircle.setFill(this.status.color);
     }
 
     /*
@@ -131,7 +196,7 @@ public class MainDeviceController {
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    public void addMessage(String data) {
+    private void addMessage(String data) {
         this.messageHistory.add(String.format("[%s] %s", dateTimeFormatter.format(LocalDateTime.now()), data));
 
         if (this.equals(mainController.getSelectedDevice())) {
