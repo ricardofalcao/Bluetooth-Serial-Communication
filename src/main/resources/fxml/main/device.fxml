@@ -31,7 +31,7 @@
                   <SVGPath fx:id="favoriteButton" content="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" fill="#c8c8c8" scaleX="0.7" scaleY="0.7" scaleZ="0.7" stroke="#808080" />
                </children>
             </HBox>
-            <Circle fx:id="deviceConnectedCircle" fill="#c8c8c8" radius="4.0" stroke="#838383" strokeType="INSIDE">
+            <Circle fx:id="deviceStatusCircle" fill="#c8c8c8" radius="4.0" stroke="#838383" strokeType="INSIDE">
                <VBox.margin>
                   <Insets right="7.0" top="3.0" />
                </VBox.margin>
