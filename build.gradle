@@ -9,10 +9,13 @@ version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    flatDir {
+        dirs 'lib'
+    }
 }
 
 dependencies {
-    compile 'io.ultreia:bluecove:2.1.1'
+    compile name: 'bluecove-2.1.2'
     compile 'com.google.code.gson:gson:2.8.6'
 }
 
