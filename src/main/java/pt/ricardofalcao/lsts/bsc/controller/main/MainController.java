@@ -180,26 +180,12 @@ public class MainController {
             System.out.println("serviceSearchCompleted");
 
             if (pendingDevices.isEmpty()) {
-                _end();
+                _endBluetoothDiscovery();
             }
         }
 
         @Override
         public void inquiryCompleted(int discType) {
-        }
-
-        private void _end() {
-            Platform.runLater(() -> {
-                if (!devices.isEmpty()) {
-                    sidebarPane.getChildren().remove(deviceListLabel);
-                } else {
-                    deviceListLabel.setText("Could not found any device nearby.");
-                }
-
-                refreshDevicesButton.setDisable(false);
-            });
-
-            System.out.println("Finished scanning devices.");
         }
     };
 
@@ -312,7 +298,13 @@ public class MainController {
         }
 
         this.devices.clear();
+
+        boolean hasLabel = sidebarPane.getChildren().contains(deviceListLabel);
         sidebarPane.getChildren().clear();
+
+        if (hasLabel) {
+            sidebarPane.getChildren().add(deviceListLabel);
+        }
     }
 
     private void refreshDevicesClicked(MouseEvent mouseEvent) {

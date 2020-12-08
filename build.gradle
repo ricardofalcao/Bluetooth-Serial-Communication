@@ -36,12 +36,22 @@ application {
     mainClass = "pt.ricardofalcao.lsts.bsc.Main"
 }
 
-ext.os = org.gradle.internal.os.OperatingSystem.current()
 jlink {
     options = ['--bind-services', '--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
 
+    launcher {
+        name = 'BluetoothSerialCommunication'
+        jvmArgs = ['-Djdk.gtk.version=2'] // required due to a bug in Java: https://github.com/javafxports/openjdk-jfx/issues/175
+    }
+
     jpackage {
         skipInstaller = true
-        icon = "src/main/resources/build/bsc.ico"
+
+        def os = org.gradle.internal.os.OperatingSystem.current()
+        if (os.isWindows()) {
+            icon = "src/main/resources/build/bsc.ico"
+        } else if (os.isMacOsX()) {
+            icon = "src/main/resources/build/bsc.icns"
+        }
     }
 }
