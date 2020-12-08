@@ -1,12 +1,13 @@
-package pt.ricardofalcao.lsts;
+package pt.ricardofalcao.lsts.bsc;
 
 import java.io.File;
-import java.io.IOException;
+
 import javafx.application.Application;
 import javax.bluetooth.BluetoothStateException;
-import pt.ricardofalcao.lsts.config.ConfigHandler;
-import pt.ricardofalcao.lsts.config.ConfigLoadException;
-import pt.ricardofalcao.lsts.config.ConfigSaveException;
+
+import pt.ricardofalcao.lsts.bsc.config.ConfigLoadException;
+import pt.ricardofalcao.lsts.bsc.config.ConfigSaveException;
+import pt.ricardofalcao.lsts.bsc.config.ConfigHandler;
 
 public class Main {
 

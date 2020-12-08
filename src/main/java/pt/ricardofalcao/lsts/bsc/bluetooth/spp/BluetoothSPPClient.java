@@ -1,4 +1,4 @@
-package pt.ricardofalcao.lsts.bluetooth.spp;
+package pt.ricardofalcao.lsts.bsc.bluetooth.spp;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -13,7 +13,7 @@ import javax.microedition.io.StreamConnection;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import pt.ricardofalcao.lsts.bluetooth.BluetoothClient;
+import pt.ricardofalcao.lsts.bsc.bluetooth.BluetoothClient;
 
 @RequiredArgsConstructor
 public class BluetoothSPPClient implements BluetoothClient {

@@ -1,4 +1,4 @@
-package pt.ricardofalcao.lsts.bluetooth;
+package pt.ricardofalcao.lsts.bsc.bluetooth;
 
 import java.io.IOException;
 import java.util.function.BiConsumer;

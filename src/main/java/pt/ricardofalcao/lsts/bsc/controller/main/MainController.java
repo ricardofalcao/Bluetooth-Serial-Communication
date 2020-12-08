@@ -1,4 +1,4 @@
-package pt.ricardofalcao.lsts.controller.main;
+package pt.ricardofalcao.lsts.bsc.controller.main;
 
 import com.intel.bluetooth.RemoteDeviceHelper;
 import java.io.IOException;
@@ -32,9 +32,9 @@ import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
 import javax.bluetooth.UUID;
 import lombok.Getter;
-import pt.ricardofalcao.lsts.Constants;
-import pt.ricardofalcao.lsts.Main;
-import pt.ricardofalcao.lsts.bluetooth.spp.BluetoothSPPClient;
+import pt.ricardofalcao.lsts.bsc.Constants;
+import pt.ricardofalcao.lsts.bsc.Main;
+import pt.ricardofalcao.lsts.bsc.bluetooth.spp.BluetoothSPPClient;
 
 public class MainController {
 
@@ -80,7 +80,7 @@ public class MainController {
         @Override
         public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/main/device.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/main/device.fxml"));
                 String friendlyName = btDevice.getFriendlyName(true);
                 MainDeviceController controller = new MainDeviceController(MainController.this, friendlyName,
                     btDevice.getBluetoothAddress());
@@ -230,7 +230,9 @@ public class MainController {
     }
 
     protected void populateSidebar() {
-        sidebarPane.getChildren().removeIf((n) -> !n.equals(deviceListLabel));
+        boolean hasLabel = sidebarPane.getChildren().contains(deviceListLabel);
+
+        sidebarPane.getChildren().clear();
 
         List<MainDeviceController> _devices = new ArrayList<>();
         _devices.addAll(this.devices.values());
@@ -249,6 +251,10 @@ public class MainController {
             }
 
             sidebarPane.getChildren().add(device.root);
+        }
+
+        if (hasLabel) {
+            sidebarPane.getChildren().add(deviceListLabel);
         }
     }
 

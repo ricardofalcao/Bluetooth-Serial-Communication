@@ -1,4 +1,4 @@
-package pt.ricardofalcao.lsts.controller.main;
+package pt.ricardofalcao.lsts.bsc.controller.main;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -17,8 +17,8 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import pt.ricardofalcao.lsts.Main;
-import pt.ricardofalcao.lsts.bluetooth.BluetoothClient;
+import pt.ricardofalcao.lsts.bsc.Main;
+import pt.ricardofalcao.lsts.bsc.bluetooth.BluetoothClient;
 
 @RequiredArgsConstructor
 public class MainDeviceController {

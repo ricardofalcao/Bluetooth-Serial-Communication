@@ -1,4 +1,4 @@
-package pt.ricardofalcao.lsts;
+package pt.ricardofalcao.lsts.bsc;
 
 import javax.bluetooth.UUID;
 
