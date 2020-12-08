@@ -35,19 +35,13 @@ public class GuiHandler extends Application {
     public void start(Stage primaryStage) throws Exception{
         this.primaryStage = primaryStage;
 
-        URL iconsUrl = getClass().getResource("icons");
-        Path path = Paths.get(iconsUrl.toURI());
-        Files.walk(path, 1).forEach(iconPath -> {
-            if (Files.isDirectory(iconPath)) {
-                return;
-            }
-
-            try (InputStream reader = Files.newInputStream(iconPath)){
+        for(int size : new int[] {16, 24, 32, 48, 64, 96, 128, 256, 512}) {
+            try (InputStream reader = getClass().getResourceAsStream(String.format("icons/%d.png", size))){
                 primaryStage.getIcons().add(new Image(reader));
             } catch (IOException e) {
                 e.printStackTrace();
             };
-        });
+        }
 
         Parent root = FXMLLoader.load(getClass().getResource("fxml/main/main.fxml"));
 

@@ -32,6 +32,7 @@ public class ConfigHandler {
      */
 
     public void load() throws ConfigLoadException {
+        this.configFolder.mkdirs();
         this.main = load(new File(configFolder, "main.json"), MainConfig.class);
     }
 
