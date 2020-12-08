@@ -106,6 +106,10 @@ public class BluetoothSPPClient implements BluetoothClient {
         LocalDevice device = LocalDevice.getLocalDevice();
         System.out.println(String.format("Device disconnected: %s [%s]", device.getFriendlyName(), device.getBluetoothAddress()));
 
+        if (!this.running) {
+            return;
+        }
+
         this.acceptThread.interrupt();
 
         connection.close();
