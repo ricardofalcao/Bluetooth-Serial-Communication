@@ -139,12 +139,13 @@ public class MainController {
 
                     AbstractDevice device = EnumDevice.getDevice((String) serviceName.getValue());
                     if(device == null) {
+                        System.out.println(String.format("Invalid service: %s", serviceName.getValue()));
                         return;
                     }
 
                     RemoteDevice host = record.getHostDevice();
 
-                    String friendlyName = host.getFriendlyName(true);
+                    String friendlyName = host.getFriendlyName(false);
                     AbstractDeviceController controller = device.buildController(MainController.this, friendlyName, host.getBluetoothAddress());
 
                     // Sidebar
@@ -159,12 +160,12 @@ public class MainController {
 
                     devices.put(RemoteDeviceHelper.getAddress(host.getBluetoothAddress()), controller);
 
-                    BluetoothSPPClient client = new BluetoothSPPClient();
-                    controller.attachBluetoothClient(client, url);
-
                     Platform.runLater(() -> {
                         populateSidebar();
                     });
+
+                    BluetoothSPPClient client = new BluetoothSPPClient();
+                    controller.attachBluetoothClient(client, url);
 
                 } catch(Exception ex) {
                     ex.printStackTrace();
