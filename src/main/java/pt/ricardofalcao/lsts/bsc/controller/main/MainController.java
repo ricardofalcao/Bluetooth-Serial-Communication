@@ -67,6 +67,10 @@ public class MainController {
 
     private boolean scanningDevices = false;
 
+    private List<Integer> pendingDevices = Collections.synchronizedList(new ArrayList<>());
+
+    //
+
     private Map<Long, AbstractDeviceController> devices = Collections.synchronizedMap(new LinkedHashMap<>());
 
     @Getter
@@ -75,22 +79,43 @@ public class MainController {
     //
 
     private final DiscoveryListener bluetoothDiscoveryListener = new DiscoveryListener() {
-        private boolean discoveredDevices = false;
 
         @Override
         public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
-            discoveredDevices = true;
-
             try {
+                System.out.println("Found device " + btDevice.toString());
                 LocalDevice localDevice = LocalDevice.getLocalDevice();
 
                 int[] attrs = new int[] { 0X0100 };
                 UUID[] uuidSet = new UUID[] {Constants.BLUETOOTH_SPP_SERVICE_UUID };
 
-                localDevice.getDiscoveryAgent().searchServices(attrs, uuidSet, btDevice, this);
+                int transID = localDevice.getDiscoveryAgent().searchServices(attrs, uuidSet, btDevice, bluetoothServiceListener);
+                pendingDevices.add(transID);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+        }
+
+        @Override
+        public void servicesDiscovered(int transID, ServiceRecord[] servRecord) {
+
+        }
+
+        @Override
+        public void serviceSearchCompleted(int transID, int respCode) {
+        }
+
+        @Override
+        public void inquiryCompleted(int discType) {
+            if(pendingDevices.isEmpty()) {
+                _endBluetoothDiscovery();
+            }
+        }
+    };
+
+    private final DiscoveryListener bluetoothServiceListener = new DiscoveryListener() {
+        @Override
+        public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
         }
 
         @Override
@@ -145,23 +170,22 @@ public class MainController {
                     ex.printStackTrace();
                 }
             }
+
         }
 
         @Override
         public void serviceSearchCompleted(int transID, int respCode) {
-            discoveredDevices = false;
+            pendingDevices.remove((Integer) transID);
+
             System.out.println("serviceSearchCompleted");
 
-            _end();
+            if (pendingDevices.isEmpty()) {
+                _end();
+            }
         }
 
         @Override
         public void inquiryCompleted(int discType) {
-            scanningDevices = false;
-
-            if(!discoveredDevices) {
-                _end();
-            }
         }
 
         private void _end() {
@@ -178,6 +202,23 @@ public class MainController {
             System.out.println("Finished scanning devices.");
         }
     };
+
+    private void _endBluetoothDiscovery() {
+        scanningDevices = false;
+        pendingDevices.clear();
+
+        Platform.runLater(() -> {
+            if (!devices.isEmpty()) {
+                sidebarPane.getChildren().remove(deviceListLabel);
+            } else {
+                deviceListLabel.setText("Could not found any device nearby.");
+            }
+
+            refreshDevicesButton.setDisable(false);
+        });
+
+        System.out.println("Finished scanning devices.");
+    }
 
 
 
@@ -222,6 +263,8 @@ public class MainController {
         }
 
         this.scanningDevices = true;
+        this.pendingDevices.clear();
+
         System.out.println("Scanning devices...");
 
         Platform.runLater(() -> {

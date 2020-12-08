@@ -158,8 +158,6 @@ public class ExampleDeviceController extends AbstractDeviceController {
      */
 
     private void tick() {
-        System.out.println("tick");
-
         try {
             if (this.contentTimeLabel != null) {
                 if(this.lastDateTime == 0L) {
