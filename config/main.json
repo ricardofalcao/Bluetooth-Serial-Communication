@@ -1,11 +1,6 @@
 {
-  "filterFavorite": false,
   "devices": {
-    "A89CED6B6682": {
-      "favorite": false
-    },
-    "5CFB7C72EEE0": {
-      "favorite": false
-    }
+    "A89CED6B6682": {},
+    "5CFB7C72EEE0": {}
   }
 }

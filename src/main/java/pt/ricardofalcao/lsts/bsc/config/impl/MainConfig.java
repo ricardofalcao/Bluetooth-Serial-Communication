@@ -7,8 +7,6 @@ import pt.ricardofalcao.lsts.bsc.config.Config;
 
 public class MainConfig implements Config {
 
-    public boolean filterFavorite;
-
     public Map<String, Device> devices = new HashMap<>();
 
     /*
@@ -23,22 +21,6 @@ public class MainConfig implements Config {
         devices.put(address, new Device(address));
     }
 
-    public boolean deviceIsFavorite(String address) {
-        if (!deviceExists(address)) {
-            deviceCreate(address);
-        }
-
-        return devices.get(address).favorite;
-    }
-
-    public void deviceSetFavorite(String address, boolean value) {
-        if (!deviceExists(address)) {
-            deviceCreate(address);
-        }
-
-        devices.get(address).favorite = value;
-    }
-
     /*
 
      */
@@ -49,8 +31,6 @@ public class MainConfig implements Config {
         private transient final String address;
 
         //
-
-        private boolean favorite;
 
     }
 

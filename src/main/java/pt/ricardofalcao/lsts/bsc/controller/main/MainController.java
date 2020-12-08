@@ -4,6 +4,7 @@ import com.intel.bluetooth.RemoteDeviceHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +17,9 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import javax.bluetooth.DataElement;
 import javax.bluetooth.DeviceClass;
@@ -35,6 +33,9 @@ import lombok.Getter;
 import pt.ricardofalcao.lsts.bsc.Constants;
 import pt.ricardofalcao.lsts.bsc.Main;
 import pt.ricardofalcao.lsts.bsc.bluetooth.spp.BluetoothSPPClient;
+import pt.ricardofalcao.lsts.bsc.device.AbstractDevice;
+import pt.ricardofalcao.lsts.bsc.controller.device.AbstractDeviceController;
+import pt.ricardofalcao.lsts.bsc.device.EnumDevice;
 
 public class MainController {
 
@@ -43,7 +44,7 @@ public class MainController {
     //
 
     @FXML
-    protected ScrollPane sidebarScrollPane;
+    public ScrollPane sidebarScrollPane;
 
     @FXML
     private VBox sidebarPane;
@@ -52,54 +53,42 @@ public class MainController {
     private Label deviceListLabel;
 
     @FXML
-    private SVGPath favoriteFilterButton;
+    private Button refreshDevicesButton;
+
+    //
 
     @FXML
-    private Button refreshDevicesButton;
+    private VBox contentBox;
 
     @FXML
     private Label selectDeviceWarnLabel;
-
-    @FXML
-    private TextArea deviceContent;
 
     //
 
     private boolean scanningDevices = false;
 
-    private Map<Long, MainDeviceController> devices = Collections.synchronizedMap(new LinkedHashMap<>());
+    private Map<Long, AbstractDeviceController> devices = Collections.synchronizedMap(new LinkedHashMap<>());
 
     @Getter
-    private MainDeviceController selectedDevice;
-
-    private boolean filterFavorite;
+    private AbstractDeviceController selectedDevice;
 
     //
 
     private final DiscoveryListener bluetoothDiscoveryListener = new DiscoveryListener() {
+        private boolean discoveredDevices = false;
+
         @Override
         public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
+            discoveredDevices = true;
+
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/main/device.fxml"));
-                String friendlyName = btDevice.getFriendlyName(true);
-                MainDeviceController controller = new MainDeviceController(MainController.this, friendlyName,
-                    btDevice.getBluetoothAddress());
-                loader.setController(controller);
-
-                loader.load();
-                devices.put(RemoteDeviceHelper.getAddress(btDevice.getBluetoothAddress()), controller);
-
-                Platform.runLater(() -> {
-                    populateSidebar();
-                });
-
                 LocalDevice localDevice = LocalDevice.getLocalDevice();
 
                 int[] attrs = new int[] { 0X0100 };
                 UUID[] uuidSet = new UUID[] {Constants.BLUETOOTH_SPP_SERVICE_UUID };
 
                 localDevice.getDiscoveryAgent().searchServices(attrs, uuidSet, btDevice, this);
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
@@ -109,39 +98,73 @@ public class MainController {
             System.out.println(String.format("Discovered services for %d", transID));
 
             for(ServiceRecord record : servRecord) {
-                String url = record.getConnectionURL(ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
+                try {
+                    String url = record.getConnectionURL(ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
 
-                if (url == null) {
-                    continue;
+                    if (url == null) {
+                        continue;
+                    }
+
+                    DataElement serviceName = record.getAttributeValue(0x0100);
+                    if (serviceName == null) {
+                        continue;
+                    }
+
+                    System.out.println(String.format("Service found %s. (%s)", url, serviceName.getValue()));
+
+                    AbstractDevice device = EnumDevice.getDevice((String) serviceName.getValue());
+                    if(device == null) {
+                        return;
+                    }
+
+                    RemoteDevice host = record.getHostDevice();
+
+                    String friendlyName = host.getFriendlyName(true);
+                    AbstractDeviceController controller = device.buildController(MainController.this, friendlyName, host.getBluetoothAddress());
+
+                    // Sidebar
+                    FXMLLoader loader = new FXMLLoader(device.getSidebarUiPath());
+                    loader.setController(controller);
+                    loader.load();
+
+                    // Content
+                    loader = new FXMLLoader(device.getContentUiPath());
+                    loader.setController(controller);
+                    loader.load();
+
+                    devices.put(RemoteDeviceHelper.getAddress(host.getBluetoothAddress()), controller);
+
+                    BluetoothSPPClient client = new BluetoothSPPClient();
+                    controller.attachBluetoothClient(client, url);
+
+                    Platform.runLater(() -> {
+                        populateSidebar();
+                    });
+
+                } catch(Exception ex) {
+                    ex.printStackTrace();
                 }
-
-                DataElement serviceName = record.getAttributeValue(0x0100);
-                DataElement serviceDescription = record.getAttributeValue(0x0101);
-                DataElement providerName = record.getAttributeValue(0x0102);
-
-                System.out.println(String.format("Service found %s. (%s, %s, %s)", url, serviceName, serviceDescription, providerName));
-
-                RemoteDevice host = record.getHostDevice();
-                MainDeviceController controller = devices.get(RemoteDeviceHelper.getAddress(host.getBluetoothAddress()));
-                if (controller == null) {
-                    System.out.println(String.format("Invalid controller for %s.", host.getBluetoothAddress()));
-                    continue;
-                }
-
-                BluetoothSPPClient client = new BluetoothSPPClient();
-                controller.attachBluetoothClient(client, url);
             }
         }
 
         @Override
         public void serviceSearchCompleted(int transID, int respCode) {
+            discoveredDevices = false;
             System.out.println("serviceSearchCompleted");
+
+            _end();
         }
 
         @Override
         public void inquiryCompleted(int discType) {
             scanningDevices = false;
 
+            if(!discoveredDevices) {
+                _end();
+            }
+        }
+
+        private void _end() {
             Platform.runLater(() -> {
                 if (!devices.isEmpty()) {
                     sidebarPane.getChildren().remove(deviceListLabel);
@@ -164,19 +187,12 @@ public class MainController {
 
     @FXML
     private void initialize() {
-        this.filterFavorite = Main.config.main.filterFavorite;
-        filterFavoriteUpdateUI();
-
         sidebarScrollPane.setOnMouseClicked(this::sidebarScrollPaneClicked);
-        favoriteFilterButton.setOnMouseClicked(this::favoriteFilterClicked);
 
         sidebarPane.getChildren().remove(deviceListLabel);
         deviceListLabel.prefWidthProperty().bind(sidebarScrollPane.widthProperty());
 
         refreshDevicesButton.setOnMouseClicked(this::refreshDevicesClicked);
-
-        deviceContent.setManaged(false);
-        deviceContent.setVisible(false);
 
         Main.gui.getPrimaryStage().setOnCloseRequest((event) -> {
             detachConnectedDevices();
@@ -233,23 +249,13 @@ public class MainController {
 
         sidebarPane.getChildren().clear();
 
-        List<MainDeviceController> _devices = new ArrayList<>();
+        List<AbstractDeviceController> _devices = new ArrayList<>();
         _devices.addAll(this.devices.values());
 
-        Collections.sort(_devices, (o1, o2) -> {
-            if (o1.isFavorite() == o2.isFavorite()) {
-                return o1.getName().compareTo(o2.getName());
-            }
+        Collections.sort(_devices, Comparator.comparing(AbstractDeviceController::getName));
 
-            return o1.isFavorite() ? -1 : 1;
-        });
-
-        for (MainDeviceController device : _devices) {
-            if (this.filterFavorite && !device.isFavorite()) {
-                continue;
-            }
-
-            sidebarPane.getChildren().add(device.root);
+        for (AbstractDeviceController device : _devices) {
+            sidebarPane.getChildren().add(device.getSidebarItem());
         }
 
         if (hasLabel) {
@@ -258,8 +264,8 @@ public class MainController {
     }
 
     private void detachConnectedDevices() {
-        for (MainDeviceController value : this.devices.values()) {
-            value.detachBluetooth();
+        for (AbstractDeviceController value : this.devices.values()) {
+            value.detach();
         }
 
         this.devices.clear();
@@ -273,32 +279,10 @@ public class MainController {
     }
 
     /*
-        FAVORITE
-     */
-
-
-    private void favoriteFilterClicked(MouseEvent mouseEvent) {
-        this.filterFavorite = !this.filterFavorite;
-        filterFavoriteUpdateUI();
-
-        if (this.selectedDevice != null && this.filterFavorite && !this.selectedDevice.isFavorite()) {
-            setSelectedDevice(null);
-        }
-
-        this.populateSidebar();
-
-        Main.config.main.filterFavorite = this.filterFavorite;
-    }
-
-    private void filterFavoriteUpdateUI() {
-        this.favoriteFilterButton.setFill(this.filterFavorite ? Color.rgb(238, 196, 82) : Color.rgb(200, 200, 200));
-    }
-
-    /*
         MISC FUNCTIONS
      */
 
-    public void setSelectedDevice(MainDeviceController controller) {
+    public void setSelectedDevice(AbstractDeviceController controller) {
         if (Objects.equals(controller, this.selectedDevice)) {
             return;
         }
@@ -314,21 +298,11 @@ public class MainController {
 
     protected void selectedDeviceUpdateUI() {
         if(this.selectedDevice != null) {
-            deviceContent.setManaged(true);
-            deviceContent.setVisible(true);
-
-            selectDeviceWarnLabel.setManaged(false);
-            selectDeviceWarnLabel.setVisible(false);
-
-            String content = String.join("\n", selectedDevice.getMessageHistory());
-            deviceContent.setText(content);
-            deviceContent.positionCaret(content.length());
+            contentBox.getChildren().clear();
+            contentBox.getChildren().add(this.selectedDevice.getContentItem());
         } else {
-            deviceContent.setManaged(false);
-            deviceContent.setVisible(false);
-
-            selectDeviceWarnLabel.setManaged(true);
-            selectDeviceWarnLabel.setVisible(true);
+            contentBox.getChildren().clear();
+            contentBox.getChildren().add(selectDeviceWarnLabel);
         }
     }
 

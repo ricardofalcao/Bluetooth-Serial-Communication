@@ -54,6 +54,14 @@ public class BluetoothSPPClient implements BluetoothClient {
 
      */
 
+    @Override
+    public void sendData(String data) throws IOException {
+        if (this.running) {
+            this.writer.write(data);
+            this.writer.flush();
+        }
+    }
+
     public void connect(String connectionURL) throws IOException {
         LocalDevice local = LocalDevice.getLocalDevice();
         System.out.println(String.format("Local Device name: %s", local.getFriendlyName()));
@@ -83,9 +91,6 @@ public class BluetoothSPPClient implements BluetoothClient {
                 }
 
                 System.out.println(String.format("Received data: %s", data));
-
-                this.writer.write(data);
-                this.writer.flush();
             }
 
             this.disconnect();

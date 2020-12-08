@@ -23,6 +23,8 @@ public interface BluetoothClient {
 
      */
 
+    void sendData(String data) throws IOException;
+
     void connect(String connectionURL) throws IOException;
 
     void disconnect() throws IOException;

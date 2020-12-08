@@ -3,7 +3,6 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
 
 <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@main.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pt.ricardofalcao.lsts.bsc.controller.main.MainController">
    <children>
@@ -12,11 +11,6 @@
             <HBox alignment="CENTER_LEFT">
                <children>
                   <Label text="Devices" />
-                  <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
-                     <children>
-                        <SVGPath fx:id="favoriteFilterButton" content="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" fill="#c7c7c7" stroke="#545454" />
-                     </children>
-                  </HBox>
                </children>
             </HBox>
             <ScrollPane fx:id="sidebarScrollPane" focusTraversable="false" hbarPolicy="NEVER" styleClass="devices" VBox.vgrow="ALWAYS">
@@ -50,22 +44,13 @@
             <Insets left="5.0" />
          </HBox.margin>
       </Separator>
-      <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+      <VBox fx:id="contentBox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
          <children>
-            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="content" VBox.vgrow="ALWAYS">
-               <children>
-                  <Label fx:id="selectDeviceWarnLabel" text="Please select a device from the device list" textAlignment="CENTER" textFill="#7c7c7c">
-                     <VBox.margin>
-                        <Insets top="40.0" />
-                     </VBox.margin>
-                  </Label>
-                  <TextArea fx:id="deviceContent" editable="false" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-                     <VBox.margin>
-                        <Insets top="6.0" />
-                     </VBox.margin>
-                  </TextArea>
-               </children>
-            </VBox>
+            <Label fx:id="selectDeviceWarnLabel" text="Please select a device from the device list" textAlignment="CENTER" textFill="#7c7c7c">
+               <VBox.margin>
+                  <Insets top="40.0" />
+               </VBox.margin>
+            </Label>
          </children>
          <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

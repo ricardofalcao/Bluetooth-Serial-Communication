@@ -2,6 +2,7 @@ package pt.ricardofalcao.lsts.bsc;
 
 import java.io.File;
 
+import java.util.Set;
 import javafx.application.Application;
 import javax.bluetooth.BluetoothStateException;
 
@@ -39,5 +40,7 @@ public class Main {
             System.exit(1);
             return;
         }
+
+        System.out.println("Goodbye");
     }
 }

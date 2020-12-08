@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox fx:id="contentRoot" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <HBox>
+      <children>
+         <VBox HBox.hgrow="ALWAYS">
+            <children>
+               <Label text="Time:" />
+               <HBox alignment="CENTER_LEFT">
+                  <children>
+                     <Label fx:id="contentTimeLabel" text="No time" textFill="#838383" />
+                     <Button fx:id="contentSyncTimeButton" mnemonicParsing="false" text="Sync">
+                        <HBox.margin>
+                           <Insets left="5.0" />
+                        </HBox.margin>
+                        <font>
+                           <Font size="11.0" />
+                        </font>
+                     </Button>
+                  </children>
+               </HBox>
+            </children>
+         </VBox>
+         <VBox HBox.hgrow="ALWAYS">
+            <children>
+               <Label text="Battery:" />
+               <Label fx:id="contentBatteryLabel" text="0%" textFill="#838383">
+                  <VBox.margin>
+                     <Insets top="3.0" />
+                  </VBox.margin>
+               </Label>
+            </children>
+         </VBox>
+      </children>
+   </HBox>
+   <Label text="Wake:">
+      <VBox.margin>
+         <Insets top="10.0" />
+      </VBox.margin>
+   </Label>
+   <HBox>
+      <children>
+         <TextField fx:id="contentWakeTextInput" HBox.hgrow="ALWAYS" />
+         <Button fx:id="contentWakeButton" mnemonicParsing="false" text="Schedule">
+            <HBox.margin>
+               <Insets left="6.0" />
+            </HBox.margin>
+         </Button>
+      </children>
+   </HBox>
+   <Label text="Console:">
+      <VBox.margin>
+         <Insets top="10.0" />
+      </VBox.margin></Label>
+   <TextArea fx:id="contentTextArea" editable="false" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+      <VBox.margin>
+         <Insets top="4.0" />
+      </VBox.margin></TextArea>
+   <padding>
+      <Insets top="5.0" />
+   </padding>
+</VBox>
