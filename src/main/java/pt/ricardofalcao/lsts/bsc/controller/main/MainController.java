@@ -116,11 +116,10 @@ public class MainController {
                 }
 
                 DataElement serviceName = record.getAttributeValue(0x0100);
-                if (serviceName != null) {
-                    System.out.println(String.format("Service %s found %s.", serviceName.getValue(), url));
-                } else {
-                    System.out.println(String.format("Service found %s.", url));
-                }
+                DataElement serviceDescription = record.getAttributeValue(0x0101);
+                DataElement providerName = record.getAttributeValue(0x0102);
+
+                System.out.println(String.format("Service found %s. (%s, %s, %s)", url, serviceName, serviceDescription, providerName));
 
                 RemoteDevice host = record.getHostDevice();
                 MainDeviceController controller = devices.get(RemoteDeviceHelper.getAddress(host.getBluetoothAddress()));
