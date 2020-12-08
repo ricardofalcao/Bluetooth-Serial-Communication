@@ -265,7 +265,7 @@ public class ExampleDeviceController extends AbstractDeviceController {
                     Float battery = Float.parseFloat(split[1]);
 
                     Platform.runLater(() -> {
-                        contentBatteryLabel.setText(String.format("%d%%", (int) (battery * 100)));
+                        contentBatteryLabel.setText(String.format("%d%%", (int) Math.round(battery * 100)));
                     });
                 } catch(NumberFormatException ex) {
                     ex.printStackTrace();
