@@ -5,6 +5,7 @@ module bluetooth_serial_comm {
     requires static lombok;
 
     requires bluecove;
+
     requires com.google.gson;
 
     opens pt.ricardofalcao.lsts.bsc.controller.main to javafx.fxml;
