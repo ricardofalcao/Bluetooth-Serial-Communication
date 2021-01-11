@@ -22,7 +22,8 @@ repositories {
 }
 
 dependencies {
-    compile name: 'bluecove-2.1.2'
+    // compile name: 'bluecove-2.1.2'
+    compile name: 'bluecove-gpl-2.1.1'
 
     compile 'com.google.code.gson:gson:2.8.6'
 }

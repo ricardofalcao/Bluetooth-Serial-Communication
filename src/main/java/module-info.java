@@ -4,7 +4,7 @@ module bluetooth_serial_comm {
 
     requires static lombok;
 
-    requires bluecove;
+    requires bluecove.gpl;
 
     requires com.google.gson;
 

@@ -6,6 +6,7 @@ import java.util.Set;
 import javafx.application.Application;
 import javax.bluetooth.BluetoothStateException;
 
+import javax.bluetooth.LocalDevice;
 import pt.ricardofalcao.lsts.bsc.config.ConfigLoadException;
 import pt.ricardofalcao.lsts.bsc.config.ConfigSaveException;
 import pt.ricardofalcao.lsts.bsc.config.ConfigHandler;
@@ -28,6 +29,9 @@ public class Main {
             System.exit(1);
             return;
         }
+
+        String stack = LocalDevice.getProperty("bluecove.stack");
+        System.out.println(String.format("Running on bluetooth stack: %s", stack));
 
         Application.launch(GuiHandler.class, args);
 
