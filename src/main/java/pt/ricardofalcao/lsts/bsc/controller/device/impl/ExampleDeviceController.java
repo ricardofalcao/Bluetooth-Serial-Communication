@@ -1,6 +1,7 @@
 package pt.ricardofalcao.lsts.bsc.controller.device.impl;
 
 import java.io.IOException;
+import java.sql.Time;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -8,7 +9,10 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
+import java.util.Calendar;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,6 +40,10 @@ import pt.ricardofalcao.lsts.bsc.controller.device.AbstractDeviceController;
 public class ExampleDeviceController extends AbstractDeviceController {
 
     private static final ScheduledExecutorService TASK_EXECUTOR = Executors.newSingleThreadScheduledExecutor();
+
+    private static final TemporalField[] TIME_COMMAND_UNIT_ORDER = new TemporalField[]{
+        ChronoField.HOUR_OF_DAY, ChronoField.MINUTE_OF_HOUR, ChronoField.SECOND_OF_MINUTE, ChronoField.DAY_OF_MONTH, ChronoField.MONTH_OF_YEAR, ChronoField.YEAR
+    };
 
     /*
 
@@ -244,13 +252,27 @@ public class ExampleDeviceController extends AbstractDeviceController {
                     break;
                 }
 
-                try {
-                    Long time = Long.parseLong(split[1]);
-                    lastDateTime = time;
-                    lastDateTimeReference = System.currentTimeMillis();
-                } catch(NumberFormatException ex) {
-                    ex.printStackTrace();
+                String[] timeSplit = split[1].split(",");
+                if(timeSplit.length != TIME_COMMAND_UNIT_ORDER.length) {
+                    break;
                 }
+
+                LocalDateTime localDateTime = LocalDateTime.MIN;
+
+                for(int i = 0; i < TIME_COMMAND_UNIT_ORDER.length; i++) {
+                    TemporalField field = TIME_COMMAND_UNIT_ORDER[i];
+
+                    try {
+                        int value = Integer.parseInt(timeSplit[i]);
+
+                        localDateTime = localDateTime.with(field, value);
+                    } catch(NumberFormatException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                lastDateTime = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                lastDateTimeReference = System.currentTimeMillis();
 
                 break;
             }
@@ -307,7 +329,20 @@ public class ExampleDeviceController extends AbstractDeviceController {
 
     private void contentSyncTimeClicked(MouseEvent mouseEvent) {
         try {
-            this.bluetoothClient.sendData(String.format("time:%d", System.currentTimeMillis()));
+            LocalDateTime localDateTime = LocalDateTime.now();
+
+            StringBuilder builder = new StringBuilder("time:");
+            for(int i = 0; i < TIME_COMMAND_UNIT_ORDER.length; i++) {
+                TemporalField field = TIME_COMMAND_UNIT_ORDER[i];
+
+                if (i > 0) {
+                    builder.append(',');
+                }
+
+                builder.append(localDateTime.get(field));
+            }
+
+            this.bluetoothClient.sendData(builder.toString());
         } catch(IOException ex) {
             ex.printStackTrace();
         }
@@ -322,10 +357,22 @@ public class ExampleDeviceController extends AbstractDeviceController {
             String text = this.contentWakeTextInput.getText();
 
             TemporalAccessor accessor = Constants.TIME_FORMATTER.parse(text);
-            LocalTime localDateTime = LocalTime.from(accessor);
 
-            long millis = localDateTime.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            this.bluetoothClient.sendData(String.format("wake:%d", millis));
+            LocalTime localTime = LocalTime.from(accessor);
+            LocalDateTime localDateTime = localTime.atDate(LocalDate.now());
+
+            StringBuilder builder = new StringBuilder("wake:");
+            for(int i = 0; i < TIME_COMMAND_UNIT_ORDER.length; i++) {
+                TemporalField field = TIME_COMMAND_UNIT_ORDER[i];
+
+                if (i > 0) {
+                    builder.append(',');
+                }
+
+                builder.append(localDateTime.get(field));
+            }
+
+            this.bluetoothClient.sendData(builder.toString());
         } catch(IOException | DateTimeParseException ex) {
             ex.printStackTrace();
         }
